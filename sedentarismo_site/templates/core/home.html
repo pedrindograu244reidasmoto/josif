@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+
+{% block title %}O Aumento do Sedentarismo - IFSULDEMINAS Muzambinho{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="bi bi-activity me-3"></i>
+                    O Aumento do Sedentarismo
+                </h1>
+                <p class="lead mb-4">
+                    Suas Consequências na Saúde do IFSULDEMINAS Campus Muzambinho
+                </p>
+                <p class="mb-4">
+                    Esta pesquisa visa analisar o impacto do sedentarismo na saúde pública local, 
+                    identificar fatores associados e propor estratégias de promoção da atividade física 
+                    na comunidade acadêmica do IFSULDEMINAS.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'core:sobre' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-info-circle me-2"></i>Sobre a Pesquisa
+                    </a>
+                    <a href="{% url 'core:resultados' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-graph-up me-2"></i>Ver Resultados
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="bg-white bg-opacity-10 rounded-3 p-4">
+                    <i class="bi bi-people-fill display-1 text-white mb-3"></i>
+                    <h3 class="text-white">Participantes</h3>
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <h2 class="text-white fw-bold">{{ total_participantes }}</h2>
+                            <small class="text-white-50">Total de participantes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Estatísticas Principais -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Dados da Pesquisa</h2>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people display-4 text-primary mb-3"></i>
+                        <h3 class="highlight-number">{{ total_participantes }}</h3>
+                        <p class="mb-0">Participantes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clipboard-data display-4 text-primary mb-3"></i>
+                        <h3 class="highlight-number">{{ total_questionarios }}</h3>
+                        <p class="mb-0">Questionários IPAQ</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card stat-card danger-stat h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-exclamation-triangle display-4 text-danger mb-3"></i>
+                        <h3 class="highlight-number danger-number">
+                            {% for nivel in niveis_atividade %}
+                                {% if nivel.nivel_atividade == 'baixo' %}{{ nivel.total }}{% endif %}
+                            {% endfor %}
+                        </h3>
+                        <p class="mb-0">Sedentários</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card stat-card success-stat h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-heart-pulse display-4 text-success mb-3"></i>
+                        <h3 class="highlight-number success-number">
+                            {% for nivel in niveis_atividade %}
+                                {% if nivel.nivel_atividade == 'alto' %}{{ nivel.total }}{% endif %}
+                            {% endfor %}
+                        </h3>
+                        <p class="mb-0">Ativos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Distribuição por Tipo de Participante -->
+{% if distribuicao_tipo %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title">Distribuição dos Participantes</h2>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Por Categoria</h5>
+                        <canvas id="tipoParticipanteChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Nível de Atividade Física</h5>
+                        <canvas id="nivelAtividadeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Principais Barreiras -->
+{% if principais_barreiras %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Principais Barreiras Identificadas</h2>
+        
+        <div class="row g-4">
+            {% for barreira in principais_barreiras %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">{{ barreira.categoria|capfirst }}</h5>
+                            <span class="badge bg-danger">{{ barreira.total }} relato{{ barreira.total|pluralize }}</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted">Intensidade Média:</small>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: {% widthratio barreira.intensidade_media 5 100 %}%"></div>
+                            </div>
+                            <small class="text-muted">{{ barreira.intensidade_media|floatformat:1 }}/5.0</small>
+                        </div>
+                        
+                        {% if barreira.categoria == 'tempo' %}
+                            <p class="card-text small">Falta de tempo devido à rotina acadêmica e profissional.</p>
+                        {% elif barreira.categoria == 'infraestrutura' %}
+                            <p class="card-text small">Espaços inadequados ou insuficientes para atividade física.</p>
+                        {% elif barreira.categoria == 'motivacao' %}
+                            <p class="card-text small">Baixa motivação e falta de interesse em exercitar-se.</p>
+                        {% elif barreira.categoria == 'tecnologia' %}
+                            <p class="card-text small">Uso excessivo de dispositivos tecnológicos.</p>
+                        {% else %}
+                            <p class="card-text small">{{ barreira.categoria|capfirst }} identificada como barreira.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Estratégias de Prevenção -->
+{% if estrategias_ativas %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title">Estratégias de Prevenção Propostas</h2>
+        
+        <div class="row g-4">
+            {% for estrategia in estrategias_ativas %}
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">{{ estrategia.titulo }}</h5>
+                            <span class="badge 
+                                {% if estrategia.tipo == 'individual' %}bg-primary
+                                {% elif estrategia.tipo == 'institucional' %}bg-success
+                                {% else %}bg-info{% endif %}">
+                                {{ estrategia.get_tipo_display }}
+                            </span>
+                        </div>
+                        
+                        <p class="card-text">{{ estrategia.descricao|truncatechars:120 }}</p>
+                        
+                        <div class="mt-auto">
+                            <small class="text-muted">
+                                <i class="bi bi-people me-1"></i>{{ estrategia.publico_alvo }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'core:estrategias' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-right me-2"></i>Ver Todas as Estratégias
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Combatendo o Sedentarismo Juntos</h2>
+        <p class="lead mb-4">
+            A pesquisa mostra a urgência de ações para promover a atividade física e melhorar a saúde da comunidade acadêmica.
+        </p>
+        <a href="{% url 'core:estrategias' %}" class="btn btn-light btn-lg me-3">
+            <i class="bi bi-lightbulb me-2"></i>Conhecer Estratégias
+        </a>
+        <a href="{% url 'core:sobre' %}" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-info-circle me-2"></i>Saiba Mais
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gráfico de distribuição por tipo de participante
+{% if distribuicao_tipo %}
+const tipoCtx = document.getElementById('tipoParticipanteChart').getContext('2d');
+new Chart(tipoCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for item in distribuicao_tipo %}
+                '{{ item.tipo_participante|capfirst }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for item in distribuicao_tipo %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: ['#2c5aa0', '#28a745', '#ffc107', '#dc3545', '#6f42c1']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% endif %}
+
+// Gráfico de nível de atividade física
+{% if niveis_atividade %}
+const nivelCtx = document.getElementById('nivelAtividadeChart').getContext('2d');
+new Chart(nivelCtx, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for item in niveis_atividade %}
+                '{{ item.nivel_atividade|capfirst }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Participantes',
+            data: [
+                {% for item in niveis_atividade %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: ['#dc3545', '#ffc107', '#28a745']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
+
